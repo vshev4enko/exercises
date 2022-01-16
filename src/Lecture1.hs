@@ -107,9 +107,9 @@ subString :: Int -> Int -> [a] -> [a]
 subString start end str
     | start     > end = []
     | end       < 0   = []
-    | otherwise = drop start' (take (end'+1) str)
+    | otherwise = take (end' - start' + 1) (drop start' str)
     where start' = max start 0
-          end' = max end 0
+          end'   = max end 0
 
 {- | Write a function that takes a String — space separated numbers,
 and finds a sum of the numbers inside this string.
@@ -120,7 +120,7 @@ and finds a sum of the numbers inside this string.
 The string contains only spaces and/or numbers.
 -}
 strSum :: String -> Int
-strSum str = sum [read x :: Int | x <- words str]
+strSum str = sum [read x | x <- words str]
 
 {- | Write a function that takes a number and a list of numbers and
 returns a string, saying how many elements of the list are strictly
@@ -136,7 +136,14 @@ and lower than 6 elements (4, 5, 6, 7, 8 and 9).
 🕯 HINT: Use recursion to implement this function.
 -}
 lowerAndGreater :: Int -> [Int] -> [Char]
-lowerAndGreater n list = concat [show n, " is greater than ", show (calc (< n) list), " elements and lower than ", show (calc (> n) list), " elements"] where
-    calc :: (Int -> Bool) -> [Int] -> Int
-    calc     _     [] = 0
-    calc pred' (x:xs) = if pred' x then 1 + calc pred' xs else calc pred' xs
+lowerAndGreater n list = concat [show n, " is greater than ", show lower, " elements and lower than ", show greater, " elements"] where
+    foldl' []     acc _ = acc
+    foldl' (x:xs) acc f = foldl' xs (f x acc) f
+
+    pred' :: Int -> (Int, Int) -> (Int, Int)
+    pred' e (l, g)
+        |     e < n = (l+1, g)
+        |     e > n = (l, g+1)
+        | otherwise = (l, g)
+
+    (lower, greater) = foldl' list (0, 0) pred'
