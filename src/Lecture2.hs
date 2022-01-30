@@ -63,7 +63,6 @@ lazyProduct list = go list 1 where
 -}
 duplicate :: [a] -> [a]
 duplicate []     = []
-duplicate [x]    = [x,x]
 duplicate (x:xs) = x : x : duplicate xs
 
 {- | Implement function that takes index and a list and removes the
@@ -79,10 +78,11 @@ return the removed element.
 removeAt :: Int -> [a] -> (Maybe a, [a])
 removeAt index list
   | index < 0 = (Nothing, list)
-  | otherwise = go index list [] where
-    go _     [] acc = (Nothing, reverse acc)
-    go 0 (x:xs) acc = (Just x, reverse acc ++ xs)
-    go i (x:xs) acc = go (i-1) xs (x:acc)
+  | otherwise = go index list []
+    where
+      go _     []   _ = (Nothing, list)
+      go 0 (x:xs) acc = (Just x, reverse acc ++ xs)
+      go i (x:xs) acc = go (i-1) xs (x:acc)
 
 {- | Write a function that takes a list of lists and returns only
 lists of even lengths.
@@ -94,8 +94,7 @@ lists of even lengths.
   in this function.
 -}
 evenLists :: [[a]] -> [[a]]
-evenLists = filter isEven where
-  isEven l = even . length $ l
+evenLists = filter (even . length)
 
 {- | The @dropSpaces@ function takes a string containing a single word
 or number surrounded by spaces and removes all leading and trailing
@@ -112,7 +111,7 @@ spaces.
 🕯 HINT: look into Data.Char and Prelude modules for functions you may use.
 -}
 dropSpaces :: [Char] -> [Char]
-dropSpaces string = takeWhile (not . isSpace) $ dropWhile isSpace string
+dropSpaces = takeWhile (not . isSpace) . dropWhile isSpace
 
 {- |
 
@@ -215,7 +214,8 @@ merge :: [Int] -> [Int] -> [Int]
 merge [] r = r
 merge l [] = l
 merge (x:xs) (y:ys)
-  | x > y     = y : merge (x:xs) ys
+  | x == y    = x : y : merge xs ys
+  | x >  y    = y : merge (x:xs) ys
   | otherwise = x : merge xs (y:ys)
 
 {- | Implement the "Merge Sort" algorithm in Haskell. The @mergeSort@
@@ -235,10 +235,7 @@ The algorithm of merge sort is the following:
 mergeSort :: [Int] -> [Int]
 mergeSort []   = []
 mergeSort [x]  = [x]
-mergeSort list =
-  let middle = div (length list) 2
-      (left, right) = splitAt middle list
-  in merge (mergeSort left) (mergeSort right)
+mergeSort (x:xs) = merge [x] (mergeSort xs)
 
 
 {- | Haskell is famous for being a superb language for implementing
