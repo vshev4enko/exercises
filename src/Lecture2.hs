@@ -288,7 +288,16 @@ data EvalError
 It returns either a successful evaluation result or an error.
 -}
 eval :: Variables -> Expr -> Either EvalError Int
-eval = error "TODO"
+eval variables expr = case expr of
+  Lit n -> Right n
+  Var s -> case lookup s variables of
+    Nothing -> Left (VariableNotFound s)
+    Just n -> Right n
+  Add expr1 expr2 -> sum' (eval variables expr1) (eval variables expr2)
+    where
+      sum' (Right a) (Right b) = Right (a+b)
+      sum' (Left err) _ = Left err
+      sum' _ (Left err) = Left err
 
 {- | Compilers also perform optimizations! One of the most common
 optimizations is "Constant Folding". It performs arithmetic operations
